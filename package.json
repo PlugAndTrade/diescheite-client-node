@@ -1,0 +1,17 @@
+{
+  "name": "die-scheite",
+  "version": "0.1.0",
+  "description": "Die Sceite node client library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "nact": "^7.2.1",
+    "ramda": "^0.26.1",
+    "uuid": "^3.3.2"
+  }
+}
