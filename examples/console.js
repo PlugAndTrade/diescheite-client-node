@@ -3,8 +3,7 @@ const dieScheite = require('../index'),
       tracingScope = require('../tracingScope');
 
 const actSystem = start();
-const ds = dieScheite.act({ actorParent: actSystem, serviceId: 'example-console', serviceVersion: '0.1.0', serviceInstanceId: '01' });
-//const ds = dieScheite.oo({ serviceId: 'example-console', serviceVersion: '0.1.0', serviceInstanceId: '01', loggers: [] });
+const ds = dieScheite({ actorParent: actSystem, serviceId: 'example-console', serviceVersion: '0.1.0', serviceInstanceId: '01' });
 
 let scope = {
   correlationId: "asdf"

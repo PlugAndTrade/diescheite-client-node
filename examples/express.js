@@ -5,7 +5,7 @@ const express = require('express'),
       DieScheite = require('../index');
 
 const actSystem = start();
-const ds = DieScheite.act({
+const ds = DieScheite({
   actorParent: actSystem,
   serviceId: 'example-console',
   serviceVersion: '0.1.0',
