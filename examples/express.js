@@ -58,7 +58,17 @@ router.use('/:id/sub', (req, res, next) => {
 });
 router.use('/:id/sub', subRouter);
 
+router.get('/:id/error', (req, res) => {
+  throw new Error('Aja baja!');
+});
+
 app.use(router);
+
+app.use(ds.expressErrorHandler);
+
+app.use(function (err, req, res, next) {
+  res.send("Internal Server Error");
+});
 
 app.listen(3000, (...args) => {
   console.log("Listening...");
