@@ -38,24 +38,28 @@ module.exports = function ({actorParent, ...config}) {
   }
 
   function expressMiddleware(req, res, next) {
-    let scope = {
+    let scope = tracingScope.generic({
       correlationId: req.headers['x-correlation-id'],
       parentId: req.headers['x-parent-scope-id'],
       route: '',
       protocol: 'http'
-    };
+    });
 
     const censoredHeaders = {
       'authorixation': true,
       'user-agent': true,
     };
+
     const ignoredHeaders = [
       'host',
       'date',
-      'x-powered-by'
+      'x-powered-by',
+      'x-scope-id',
     ];
 
-    loggedAction(tracingScope.generic(scope), entry => {
+    res.set('X-Scope-Id', scope.id);
+
+    loggedAction(scope, entry => {
       req.logger = entry;
       next();
       return new Promise((resolve) => {
