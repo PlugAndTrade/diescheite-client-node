@@ -4,7 +4,7 @@ const R = require('ramda'),
       { queryChildren, logMaxLevel, LEVELS, levelCategories, levelCategory, spawnHelper, appendToProp } = require('./utils'),
       LogMessage = require('./log-message'),
       LogTracer = require('./log-tracer'),
-      { INIT, ADD_HEADER, TRACE, LOG, FINALIZE, PUBLISH } = require('./actions');
+      { INIT, ADD_HEADER, TRACE, LOG, EXTEND, FINALIZE, PUBLISH } = require('./actions');
 
 const finalizeChildren = queryChildren(FINALIZE);
 
@@ -25,6 +25,7 @@ const logEntryActions = {
   [ADD_HEADER]: (state, msg, _ctx) => R.pipe(R.props(['key', 'value']), R.apply(R.objOf), addHeader(state))(msg),
   [LOG]: (state, msg, _ctx) => R.pipe(R.prop('message'), addMessage(state))(msg),
   [TRACE]: (state, msg, _ctx) => R.pipe(R.prop('traces'), addTraces(state))(msg),
+  [EXTEND]: (state, msg, _ctx) => R.pipe(R.props(['name', 'data']), R.apply(R.assoc))(msg)(state),
   [FINALIZE]: (state, { end }, ctx) => {
     finalizeChildren(ctx)
       .then(() => dispatch(ctx.self, { type: PUBLISH, end }, ctx.sender));
@@ -96,6 +97,10 @@ class DieScheiteLogEntry {
 
   trace (name, action) {
     return LogTracer(this, { id: uuid(), name }).run(action);
+  }
+
+  extend (name, data) {
+    dispatch(this.actor, { type: EXTEND, name, data });
   }
 
   init () {

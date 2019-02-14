@@ -45,9 +45,38 @@ module.exports = function ({actorParent, ...config}) {
       protocol: 'http'
     };
 
+    const censoredHeaders = {
+      'authorixation': true,
+      'user-agent': true,
+    };
+    const ignoredHeaders = [
+      'host',
+      'date',
+      'x-powered-by'
+    ];
+
     loggedAction(tracingScope.generic(scope), entry => {
       req.logger = entry;
       next();
+      return new Promise((resolve) => {
+        res.on('close', () => {
+          req.logger.extend('http', {
+            request: {
+              method: req.method,
+              host: req.hostname,
+              uri: req.originalUrl,
+              headers: R.pipe(
+                R.omit(ignoredHeaders),
+                R.mapObjIndexed((val, key) => key in censoredHeaders ? '<censored>' : val)
+              )(req.headers)
+            },
+            response: res.finished
+              ? { statusCode: res.statusCode, headers: R.omit(ignoredHeaders, res.getHeaders()) }
+              : null
+          });
+          resolve();
+        });
+      });
     });
   }
 

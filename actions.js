@@ -6,6 +6,7 @@ module.exports = {
   INIT: 'INIT',
   ATTACH: 'ATTACH',
   TRACE: 'TRACE',
+  EXTEND: 'EXTEND',
   START_TRACE: 'START_TRACE',
-  END_TRACE: 'END_TRACE'
+  END_TRACE: 'END_TRACE',
 };

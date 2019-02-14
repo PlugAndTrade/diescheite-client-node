@@ -62,13 +62,23 @@ router.get('/:id/error', (req, res) => {
   throw new Error('Aja baja!');
 });
 
+router.use('/:id/timeout', (req, res, next) => {
+  setTimeout(next, 5000);
+});
+
+router.get('/:id/timeout', (req, res) => {
+  res.send("Timeout");
+});
+
 app.use(router);
 
-app.use(ds.expressErrorHandler);
-
 app.use(function (err, req, res, next) {
+  res.statusCode = 500;
   res.send("Internal Server Error");
+  next(err);
 });
+
+app.use(ds.expressErrorHandler);
 
 app.listen(3000, (...args) => {
   console.log("Listening...");
