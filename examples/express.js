@@ -14,9 +14,28 @@ const ds = DieScheite({
 
 const app = express();
 
-const { logger, errorHandler } = ds.middleware({ censoredHeaders: [ 'foo' ] });
+const { logger, errorHandler } = ds.middleware({
+  ignoredRoutes: [ '/healthcheck', /ignored/ ],
+  censoredHeaders: [ 'foo' ]
+});
 
 app.use(logger);
+
+app.get('/healthcheck', (req, res) => {
+  res.send("OK");
+});
+
+app.get('/one/ignored/route', (req, res) => {
+  res.send("Ignored");
+});
+
+app.get('/some/other/ignored/route', (req, res) => {
+  res.send("Ignored");
+});
+
+app.get('/some/other/ignored/error', (req, res) => {
+  throw new Error('Ignored error');
+});
 
 app.get('/', (req, res) => {
   return req.logger.trace("send", logger => {

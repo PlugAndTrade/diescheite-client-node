@@ -35,6 +35,9 @@ const DEFAULT_MIDDLEWARE_OPTS = {
     'date',
     'x-powered-by',
     'x-scope-id',
+  ],
+  ignoredRoutes: [
+    '/healthcheck'
   ]
 };
 
@@ -59,12 +62,20 @@ module.exports = function ({actorParent, ...config}) {
   function middleware(opts) {
     opts = R.mergeRight(DEFAULT_MIDDLEWARE_OPTS, opts);
 
+    const ignoredRoutes = R.map(R.constructN(1, RegExp))(opts.ignoredRoutes);
+    const ignoredRoute = (route) => R.any(R.invoker(1, 'test')(route), ignoredRoutes)
+
     const filterHeaders = headersFilter(
       R.reduce(R.flip(R.assoc(R.__, true)), {})(opts.censoredHeaders),
       opts.ignoredHeaders
     );
 
     function logger(req, res, next) {
+      if (ignoredRoute(req.originalUrl)) {
+        next();
+        return;
+      }
+
       let scope = tracingScope.generic({
         correlationId: req.headers['x-correlation-id'],
         parentId: req.headers['x-parent-scope-id'],
@@ -97,7 +108,11 @@ module.exports = function ({actorParent, ...config}) {
     }
 
     function errorHandler(err, req, res, next) {
-      req.logger.error(`Uncaught error: ${err}`, err.stack);
+      if (req.logger) {
+        req.logger.error(`Uncaught error: ${err}`, err.stack);
+      } else {
+        next(err);
+      }
     }
 
     return {
