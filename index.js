@@ -82,7 +82,6 @@ module.exports = function ({actorParent, ...config}) {
 
   function expressErrorHandler(err, req, res, next) {
     req.logger.error(`Uncaught error: ${err}`, err.stack);
-    next(err);
   }
 
   function stop() {
