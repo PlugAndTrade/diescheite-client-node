@@ -9,9 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.4",
     "nact": "^7.2.1",
     "ramda": "^0.26.1",
     "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "express": "^4.16.4"
   }
 }
