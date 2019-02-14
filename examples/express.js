@@ -14,7 +14,9 @@ const ds = DieScheite({
 
 const app = express();
 
-app.use(ds.expressMiddleware);
+const { logger, errorHandler } = ds.middleware({ censoredHeaders: [ 'foo' ] });
+
+app.use(logger);
 
 app.get('/', (req, res) => {
   return req.logger.trace("send", logger => {
@@ -78,7 +80,7 @@ app.use(function (err, req, res, next) {
   next(err);
 });
 
-app.use(ds.expressErrorHandler);
+app.use(errorHandler);
 
 app.listen(3000, (...args) => {
   console.log("Listening...");

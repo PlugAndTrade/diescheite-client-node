@@ -20,6 +20,25 @@ const consolePublisherActions = {
   }
 };
 
+const headersFilter = (censoredHeaders, ignoredHeaders) => R.pipe(
+  R.omit(ignoredHeaders),
+  R.mapObjIndexed((val, key) => key in censoredHeaders ? '<censored>' : val)
+);
+
+const DEFAULT_MIDDLEWARE_OPTS = {
+  censoredHeaders: [
+    'authorization',
+    'user-agent',
+  ],
+  ignoredHeaders: [
+    'host',
+    'date',
+    'x-powered-by',
+    'x-scope-id',
+  ]
+};
+
+
 module.exports = function ({actorParent, ...config}) {
   const serviceInfo = R.pick([ 'serviceId', 'serviceInstanceId', 'serviceVersion' ], config);
   const publisher = spawnHelper(actorParent, consolePublisherActions, {});
@@ -37,55 +56,54 @@ module.exports = function ({actorParent, ...config}) {
       .then(result => ({ result, published: logger.finalize() }));
   }
 
-  function expressMiddleware(req, res, next) {
-    let scope = tracingScope.generic({
-      correlationId: req.headers['x-correlation-id'],
-      parentId: req.headers['x-parent-scope-id'],
-      route: '',
-      protocol: 'http'
-    });
+  function middleware(opts) {
+    opts = R.mergeRight(DEFAULT_MIDDLEWARE_OPTS, opts);
 
-    const censoredHeaders = {
-      'authorixation': true,
-      'user-agent': true,
-    };
+    const filterHeaders = headersFilter(
+      R.reduce(R.flip(R.assoc(R.__, true)), {})(opts.censoredHeaders),
+      opts.ignoredHeaders
+    );
 
-    const ignoredHeaders = [
-      'host',
-      'date',
-      'x-powered-by',
-      'x-scope-id',
-    ];
+    function logger(req, res, next) {
+      let scope = tracingScope.generic({
+        correlationId: req.headers['x-correlation-id'],
+        parentId: req.headers['x-parent-scope-id'],
+        route: '',
+        protocol: 'http'
+      });
 
-    res.set('X-Scope-Id', scope.id);
+      res.set('X-Scope-Id', scope.id);
 
-    loggedAction(scope, entry => {
-      req.logger = entry;
-      next();
-      return new Promise((resolve) => {
-        res.on('close', () => {
-          req.logger.extend('http', {
-            request: {
-              method: req.method,
-              host: req.hostname,
-              uri: req.originalUrl,
-              headers: R.pipe(
-                R.omit(ignoredHeaders),
-                R.mapObjIndexed((val, key) => key in censoredHeaders ? '<censored>' : val)
-              )(req.headers)
-            },
-            response: res.finished
-              ? { statusCode: res.statusCode, headers: R.omit(ignoredHeaders, res.getHeaders()) }
-              : null
+      loggedAction(scope, entry => {
+        req.logger = entry;
+        next();
+        return new Promise((resolve) => {
+          res.on('close', () => {
+            req.logger.extend('http', {
+              request: {
+                method: req.method,
+                host: req.hostname,
+                uri: req.originalUrl,
+                headers: filterHeaders(req.headers)
+              },
+              response: res.finished
+                ? { statusCode: res.statusCode, headers: filterHeaders(res.getHeaders()) }
+                : null
+            });
+            resolve();
           });
-          resolve();
         });
       });
-    });
-  }
+    }
 
-  function expressErrorHandler(err, req, res, next) {
-    req.logger.error(`Uncaught error: ${err}`, err.stack);
+    function errorHandler(err, req, res, next) {
+      req.logger.error(`Uncaught error: ${err}`, err.stack);
+    }
+
+    return {
+      logger,
+      errorHandler
+    };
   }
 
   function stop() {
@@ -94,8 +112,7 @@ module.exports = function ({actorParent, ...config}) {
 
   return {
     loggedAction,
-    expressMiddleware,
-    expressErrorHandler,
+    middleware,
     stop,
   };
 };
