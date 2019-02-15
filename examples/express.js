@@ -1,26 +1,24 @@
 const express = require('express'),
-      R = require('ramda'),
-      { start, stop } = require('nact'),
-      tracingScope = require('../tracingScope'),
+      { start } = require('nact'),
       DieScheite = require('../index');
 
 const actSystem = start();
-const ds = DieScheite({
-  serviceId: 'example-console',
-  serviceVersion: '0.1.0',
-  serviceInstanceId: '01'
-});
-const logPublisher = ds.publishers.console.start(actSystem, { pretty: true });
+const logPublisher = DieScheite.publishers.console.start(actSystem, { pretty: true });
 
 const app = express();
 
-app.use(ds.express.middleware(
+app.use(DieScheite.express.middleware(
+  {
+    serviceId: 'example-console',
+    serviceVersion: '0.1.0',
+    serviceInstanceId: '01'
+  },
   logPublisher,
+  app,
   {
     ignoredRoutes: [ '/healthcheck', /ignored/ ],
     censoredHeaders: [ 'user-agent', 'foo' ]
   },
-  app
 ));
 
 app.get('/healthcheck', (req, res) => {
@@ -97,7 +95,7 @@ app.use(function (err, req, res, next) {
   next(err);
 });
 
-app.use(ds.express.errorHandler);
+app.use(DieScheite.express.errorHandler);
 
 app.listen(3000, (...args) => {
   console.log("Listening...");

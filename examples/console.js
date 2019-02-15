@@ -1,16 +1,20 @@
-const dieScheite = require('../index'),
+const DieScheite = require('../index'),
       { start, stop } = require('nact'),
-      tracingScope = require('../tracingScope');
+      tracingScope = require('../tracing-scope');
 
 const actSystem = start();
-const ds = dieScheite({ serviceId: 'example-console', serviceVersion: '0.1.0', serviceInstanceId: '01' });
-const logPublisher = ds.publishers.console.start(actSystem);
+const logPublisher = DieScheite.publishers.console.start(actSystem);
+const ds = DieScheite.generic({
+    serviceId: 'example-console',
+    serviceVersion: '0.1.0',
+    serviceInstanceId: '01'
+  }, logPublisher);
 
 let scope = {
   correlationId: "asdf"
 };
 
-let res = ds.loggedAction(logPublisher, tracingScope.generic(scope), entry => {
+let res = ds.loggedAction(tracingScope.generic(scope), entry => {
   entry.addHeader("Foo", "bar");
   entry
     .info("Hej");

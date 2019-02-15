@@ -1,4 +1,13 @@
-const R = require('ramda');
+const R = require('ramda'),
+      loggedAction = require('./logged-action'),
+      tracingScope = require('./tracing-scope');
+
+function headersFilter(censoredHeaders, ignoredHeaders) {
+  return R.pipe(
+    R.omit(ignoredHeaders),
+    R.mapObjIndexed((val, key) => key in censoredHeaders ? '<censored>' : val)
+  );
+}
 
 function getPattern(router, url) {
   let match = router.regexp.exec(url);
@@ -51,4 +60,84 @@ function findRoute(req, app) {
   );
 }
 
-module.exports = { findRoute };
+function errorHandler(err, req, res, next) {
+  if (req.logger) {
+    req.logger.error(`Uncaught error: ${err}`, err.stack);
+  } else {
+    next(err);
+  }
+}
+
+const DEFAULT_MIDDLEWARE_OPTS = {
+  censoredHeaders: [
+    'authorization',
+    'user-agent',
+  ],
+  ignoredHeaders: [
+    'host',
+    'date',
+    'x-powered-by',
+    'x-scope-id',
+  ],
+  ignoredRoutes: [
+    '/healthcheck'
+  ]
+};
+
+function middleware(serviceInfo, publisher, app, opts) {
+  opts = R.mergeRight(DEFAULT_MIDDLEWARE_OPTS, opts);
+
+  const ignoredRoutes = R.map(R.constructN(1, RegExp))(opts.ignoredRoutes);
+  const ignoredRoute = (route) => R.any(R.invoker(1, 'test')(route), ignoredRoutes)
+
+  const filterHeaders = headersFilter(
+    R.reduce(R.flip(R.assoc(R.__, true)), {})(opts.censoredHeaders),
+    opts.ignoredHeaders
+  );
+
+  function logger(req, res, next) {
+    if (ignoredRoute(req.originalUrl)) {
+      next();
+      return;
+    }
+
+    let scope = tracingScope.generic({
+      correlationId: req.headers['x-correlation-id'],
+      parentId: req.headers['x-parent-scope-id'],
+      route: app ? findRoute(req, app).pattern : '',
+      protocol: 'http'
+    });
+
+    res.set('X-Scope-Id', scope.id);
+
+    loggedAction(serviceInfo, scope, publisher, entry => {
+      req.logger = entry;
+      next();
+      return new Promise((resolve) => {
+        res.on('close', () => {
+          req.logger.extend('http', {
+            request: {
+              method: req.method,
+              host: req.hostname,
+              uri: req.originalUrl,
+              headers: filterHeaders(req.headers)
+            },
+            response: res.finished
+              ? { statusCode: res.statusCode, headers: filterHeaders(res.getHeaders()) }
+              : null
+          });
+          resolve();
+        });
+      });
+    });
+  }
+
+  return logger;
+}
+
+module.exports = {
+  findRoute,
+  errorHandler,
+  headersFilter,
+  middleware
+};
