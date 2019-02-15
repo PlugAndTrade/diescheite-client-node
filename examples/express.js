@@ -17,7 +17,7 @@ const app = express();
 const { logger, errorHandler } = ds.middleware({
   ignoredRoutes: [ '/healthcheck', /ignored/ ],
   censoredHeaders: [ 'foo' ]
-});
+}, app);
 
 app.use(logger);
 

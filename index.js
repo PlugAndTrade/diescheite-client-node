@@ -2,6 +2,7 @@ const R = require('ramda'),
       { dispatch } = require('nact'),
       uuid = require('uuid/v4'),
       { spawnHelper } = require('./utils'),
+      { findRoute } = require('./express'),
       { PUBLISH } = require('./actions'),
       tracingScope = require('./tracingScope'),
       LogEntry = require('./log-entry');
@@ -59,7 +60,7 @@ module.exports = function ({actorParent, ...config}) {
       .then(result => ({ result, published: logger.finalize() }));
   }
 
-  function middleware(opts) {
+  function middleware(opts, app) {
     opts = R.mergeRight(DEFAULT_MIDDLEWARE_OPTS, opts);
 
     const ignoredRoutes = R.map(R.constructN(1, RegExp))(opts.ignoredRoutes);
@@ -79,7 +80,7 @@ module.exports = function ({actorParent, ...config}) {
       let scope = tracingScope.generic({
         correlationId: req.headers['x-correlation-id'],
         parentId: req.headers['x-parent-scope-id'],
-        route: '',
+        route: app ? findRoute(req, app).pattern : '',
         protocol: 'http'
       });
 
