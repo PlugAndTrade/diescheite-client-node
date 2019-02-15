@@ -6,20 +6,22 @@ const express = require('express'),
 
 const actSystem = start();
 const ds = DieScheite({
-  actorParent: actSystem,
   serviceId: 'example-console',
   serviceVersion: '0.1.0',
   serviceInstanceId: '01'
 });
+const logPublisher = ds.publishers.console.start(actSystem, { pretty: true });
 
 const app = express();
 
-const { logger, errorHandler } = ds.middleware({
-  ignoredRoutes: [ '/healthcheck', /ignored/ ],
-  censoredHeaders: [ 'foo' ]
-}, app);
-
-app.use(logger);
+app.use(ds.express.middleware(
+  logPublisher,
+  {
+    ignoredRoutes: [ '/healthcheck', /ignored/ ],
+    censoredHeaders: [ 'user-agent', 'foo' ]
+  },
+  app
+));
 
 app.get('/healthcheck', (req, res) => {
   res.send("OK");
@@ -51,14 +53,13 @@ app.get('/:id', (req, res) => {
 
 const fooRouter = express.Router();
 
-fooRouter.use('/:fooId', (req, res, next) => {
-  next();
+fooRouter.get('/:fooId', (req, res) => {
   res.send(JSON.stringify(R.mergeRight(req.foo, { fooId: req.params.fooId })));
 });
 
 const subRouter = express.Router();
 
-subRouter.use('/:subId', (req, res, next) => {
+subRouter.get('/:subId', (req, res, next) => {
   req.foo.subId = req.params.subId;
   req.logger.info(`Got subId: ${req.params.subId}`);
   res.send(JSON.stringify({ foo: 'bar', id: req.foo.id, subId: req.params.subId }));
@@ -74,9 +75,6 @@ router.use('/:id', (req, res, next) => {
   return next();
 });
 
-router.use('/:id/sub', (req, res, next) => {
-  next();
-});
 router.use('/:id/sub', subRouter);
 
 router.get('/:id/error', (req, res) => {
@@ -99,7 +97,7 @@ app.use(function (err, req, res, next) {
   next(err);
 });
 
-app.use(errorHandler);
+app.use(ds.express.errorHandler);
 
 app.listen(3000, (...args) => {
   console.log("Listening...");

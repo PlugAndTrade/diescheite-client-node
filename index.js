@@ -5,21 +5,8 @@ const R = require('ramda'),
       { findRoute } = require('./express'),
       { PUBLISH } = require('./actions'),
       tracingScope = require('./tracingScope'),
+      publishers = require('./publishers'),
       LogEntry = require('./log-entry');
-
-const delay = t => new Promise((resolve) => t <= 0 ? setImmediate(resolve) : setTimeout(resolve, t));
-
-const consolePublisherActions = {
-  [PUBLISH]: (state, { entry }, ctx) => {
-    dispatch(ctx.sender, delay(0)
-      .then(() => {
-        console.log(JSON.stringify(entry, null, 2));
-        return {};
-      })
-    );
-    return state;
-  }
-};
 
 const headersFilter = (censoredHeaders, ignoredHeaders) => R.pipe(
   R.omit(ignoredHeaders),
@@ -42,12 +29,10 @@ const DEFAULT_MIDDLEWARE_OPTS = {
   ]
 };
 
-
-module.exports = function ({actorParent, ...config}) {
+module.exports = function (config) {
   const serviceInfo = R.pick([ 'serviceId', 'serviceInstanceId', 'serviceVersion' ], config);
-  const publisher = spawnHelper(actorParent, consolePublisherActions, {});
 
-  function loggedAction(scope, action) {
+  function loggedAction(publisher, scope, action) {
     let entry = R.pipe(
       R.pick([ 'id', 'parentId', 'correlationId', 'protocol', 'route' ]),
       R.mergeLeft(serviceInfo),
@@ -60,7 +45,7 @@ module.exports = function ({actorParent, ...config}) {
       .then(result => ({ result, published: logger.finalize() }));
   }
 
-  function middleware(opts, app) {
+  function middleware(publisher, opts, app) {
     opts = R.mergeRight(DEFAULT_MIDDLEWARE_OPTS, opts);
 
     const ignoredRoutes = R.map(R.constructN(1, RegExp))(opts.ignoredRoutes);
@@ -86,7 +71,7 @@ module.exports = function ({actorParent, ...config}) {
 
       res.set('X-Scope-Id', scope.id);
 
-      loggedAction(scope, entry => {
+      loggedAction(publisher, scope, entry => {
         req.logger = entry;
         next();
         return new Promise((resolve) => {
@@ -108,27 +93,23 @@ module.exports = function ({actorParent, ...config}) {
       });
     }
 
-    function errorHandler(err, req, res, next) {
-      if (req.logger) {
-        req.logger.error(`Uncaught error: ${err}`, err.stack);
-      } else {
-        next(err);
-      }
-    }
-
-    return {
-      logger,
-      errorHandler
-    };
+    return logger;
   }
 
-  function stop() {
-    stop(publisher);
+  function errorHandler(err, req, res, next) {
+    if (req.logger) {
+      req.logger.error(`Uncaught error: ${err}`, err.stack);
+    } else {
+      next(err);
+    }
   }
 
   return {
     loggedAction,
-    middleware,
-    stop,
+    express: {
+      middleware,
+      errorHandler
+    },
+    publishers
   };
 };

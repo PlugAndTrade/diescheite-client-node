@@ -3,13 +3,14 @@ const dieScheite = require('../index'),
       tracingScope = require('../tracingScope');
 
 const actSystem = start();
-const ds = dieScheite({ actorParent: actSystem, serviceId: 'example-console', serviceVersion: '0.1.0', serviceInstanceId: '01' });
+const ds = dieScheite({ serviceId: 'example-console', serviceVersion: '0.1.0', serviceInstanceId: '01' });
+const logPublisher = ds.publishers.console.start(actSystem);
 
 let scope = {
   correlationId: "asdf"
 };
 
-let res = ds.loggedAction(tracingScope.generic(scope), entry => {
+let res = ds.loggedAction(logPublisher, tracingScope.generic(scope), entry => {
   entry.addHeader("Foo", "bar");
   entry
     .info("Hej");
