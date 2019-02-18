@@ -1,31 +1,4 @@
-const R = require('ramda'),
-      uuid = require('uuid/v4'),
-      { spawn, query } = require('nact');
-
-const promiseAll = ps => Promise.all(ps);
-const appendToProp = prop => R.flip(R.uncurryN(2, obj => R.over(R.lensProp(prop), R.append(obj))));
-
-const queryChildren = R.uncurryN(2, (action) => R.pipe(
-  R.prop('children'),
-  R.invoker(0, 'values'),
-  Array.from,
-  R.map(c => query(c, { type: action }, 100)),
-  promiseAll
-));
-
-function spawnHelper(parent, actions, initialState) {
-  return spawn(
-    parent,
-    (state, msg, ctx) => {
-      if (!actions[msg.type]) {
-        throw new Error(`Unknown action: ${msg.type}`)
-      }
-      return actions[msg.type](state, msg, ctx)
-    },
-    initialState.id || uuid(),
-    { initialState }
-  );
-}
+const R = require('ramda');
 
 const logMaxLevel = R.pipe(
   R.prop('messages'),
@@ -64,8 +37,8 @@ module.exports = {
   LEVELS,
   levelCategories,
   levelCategory,
-  spawnHelper,
-  queryChildren,
-  promiseAll,
-  appendToProp
+  spawnHelper: require('./spawn-helper'),
+  queryChildren: require('./query-children'),
+  promiseAll: require('./promise-all'),
+  appendToProp: require('./append-to-prop')
 };
