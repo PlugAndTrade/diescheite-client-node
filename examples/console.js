@@ -3,7 +3,7 @@ const DieScheite = require('../index'),
       tracingScope = require('../tracing-scope');
 
 const actSystem = start();
-const logPublisher = DieScheite.publishers.console.start(actSystem);
+const logPublisher = DieScheite.publishers.console.start(actSystem, { pretty: true });
 const ds = DieScheite.generic({
     serviceId: 'example-console',
     serviceVersion: '0.1.0',

@@ -1,5 +1,5 @@
 const R = require('ramda'),
-      LogEntry = require('./log-entry');
+      Entry = require('./entry');
 
 function loggedAction(serviceInfo, scope, publisher, action) {
   let entry = R.pipe(
@@ -7,7 +7,7 @@ function loggedAction(serviceInfo, scope, publisher, action) {
     R.mergeLeft(serviceInfo),
   )(scope);
 
-  let logger = LogEntry(entry, publisher);
+  let logger = Entry(entry, publisher);
 
   logger.init();
   return new Promise((resolve, reject) => Promise.resolve(action(logger)).then(resolve).catch(reject))
