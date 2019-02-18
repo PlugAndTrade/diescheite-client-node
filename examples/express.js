@@ -9,7 +9,7 @@ const app = express();
 
 app.use(DieScheite.express.middleware(
   {
-    serviceId: 'example-console',
+    serviceId: 'example-express',
     serviceVersion: '0.1.0',
     serviceInstanceId: '01'
   },
