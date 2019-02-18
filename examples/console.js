@@ -1,6 +1,5 @@
 const DieScheite = require('../index'),
-      { start, stop } = require('nact'),
-      tracingScope = require('../tracing-scope');
+      { start, stop } = require('nact');
 
 const actSystem = start();
 const logPublisher = DieScheite.publishers.console.start(actSystem, { pretty: true });
@@ -14,7 +13,7 @@ let scope = {
   correlationId: "asdf"
 };
 
-let res = ds.loggedAction(tracingScope.generic(scope), entry => {
+let res = ds.loggedAction(DieScheite.scope.generic(scope), entry => {
   entry.addHeader("Foo", "bar");
   entry
     .info("Hej");

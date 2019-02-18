@@ -1,6 +1,6 @@
 const R = require('ramda'),
       loggedAction = require('./logged-action'),
-      tracingScope = require('./tracing-scope');
+      Scope = require('./scope');
 
 function headersFilter(censoredHeaders, ignoredHeaders) {
   return R.pipe(
@@ -101,7 +101,7 @@ function middleware(serviceInfo, publisher, app, opts) {
       return;
     }
 
-    let scope = tracingScope.generic({
+    let scope = Scope.generic({
       correlationId: req.headers['x-correlation-id'],
       parentId: req.headers['x-parent-scope-id'],
       route: app ? findRoute(req, app).pattern : '',
