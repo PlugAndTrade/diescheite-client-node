@@ -1,6 +1,6 @@
 const { dispatch, query } = require('nact'),
       uuid = require('uuid/v4'),
-      { LEVELS } = require('../utils'),
+      { values: { DEBUG, INFO, WARNING, ERROR, CRITICAL } } = require('../levels'),
       { INIT, ADD_HEADER, EXTEND, FINALIZE } = require('../actions'),
       createMessage = require('../message'),
       createTracer = require('../tracer');
@@ -34,23 +34,23 @@ module.exports = class EntryClient {
   }
 
   debug (message) {
-    return this.log(LEVELS.DEBUG, message, undefined);
+    return this.log(DEBUG, message, undefined);
   }
 
   info (message) {
-    return this.log(LEVELS.INFO, message, undefined);
+    return this.log(INFO, message, undefined);
   }
 
   warning (message) {
-    return this.log(LEVELS.WARNING, message, undefined);
+    return this.log(WARNING, message, undefined);
   }
 
   error (message, stacktrace) {
-    return this.log(LEVELS.ERROR, message, stacktrace);
+    return this.log(ERROR, message, stacktrace);
   }
 
   critical (message, stacktrace) {
-    return this.log(LEVELS.CRITICAL, message, stacktrace);
+    return this.log(CRITICAL, message, stacktrace);
   }
 
   trace (name, action) {

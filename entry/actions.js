@@ -1,6 +1,7 @@
 const R = require('ramda'),
       { stop, dispatch, query } = require('nact'),
-      { queryChildren, logMaxLevel, levelCategory, appendToProp } = require('../utils'),
+      { category } = require('../levels'),
+      { queryChildren, appendToProp } = require('../utils'),
       { INIT, ADD_HEADER, TRACE, LOG, EXTEND, FINALIZE, PUBLISH } = require('../actions');
 
 const finalizeChildren = queryChildren(FINALIZE);
@@ -10,6 +11,12 @@ const addTraces = R.flip(R.uncurryN(2, obj => R.over(
   R.lensProp('trace'),
   R.concat(R.__, obj)
 )));
+
+const logMaxLevel = R.pipe(
+  R.prop('messages'),
+  R.map(R.prop('level')),
+  R.reduce(R.max, 0)
+);
 
 module.exports = {
   [INIT]: (state, { timestamp }, _ctx) => R.mergeRight(state, {
@@ -34,7 +41,7 @@ module.exports = {
       R.mergeLeft({
         duration: end - state.timestamp,
         level,
-        levelCategory: levelCategory(level)
+        levelCategory: category(level)
       }),
       R.over(R.lensProp('messages'), R.pipe(R.sortBy(R.prop('index')), R.map(R.dissoc('index'))))
     )(state);
