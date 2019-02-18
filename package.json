@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PlugAndTrade/diescheite-client-node.git"
+  },
+  "author": "Plug-n-Trade, developers@plug-n-trade.com",
   "license": "ISC",
   "dependencies": {
     "nact": "^7.2.1",
