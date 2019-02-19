@@ -1,6 +1,6 @@
 module.exports = {
-  express: require('./express'),
-  generic: require('./generic'),
-  publishers: require('./publishers'),
-  scope: require('./scope')
+  express: require('./lib/express'),
+  generic: require('./lib/generic'),
+  publishers: require('./lib/publishers'),
+  scope: require('./lib/scope')
 };
