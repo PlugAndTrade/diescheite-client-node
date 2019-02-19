@@ -4,15 +4,24 @@ NodeJS Die Scheite client.
 ## Documentation
 
 ### Overview
-This library is implemented with [nact](https://github.com/ncthbrt/nact), basic actor pattern suuport library. This
-forces the user of this library to be minimally aware of `nact`. The minimum requirement is as follows:
+This library is implemented with [nact](https://github.com/ncthbrt/nact), basic actor pattern suuport library.
+`nact` has to be started, either outside Die Scheite or by Die Scheite.
 
+Using default `nact` system:
 ```
-const { start } = require('nact');
+const DieScheite = require('die-scheite');
+
+const dieSchieteActParent = DieScheite.start(); // Starts a new nact system
+```
+
+Using custom `nact` system:
+```
+const DieScheite = require('die-scheite'),
+      { start } = require('nact');
+
 const actSystem = start(); // Start the nact system.
+const dieSchieteActParent = DieScheite.start(actSystem);
 ```
-
-If the nact system is not started no actions will be performed on Die Scheite primitives.
 
 ### Publishers
 

@@ -1,8 +1,7 @@
 const express = require('express'),
-      { start } = require('nact'),
       DieScheite = require('../index');
 
-const actSystem = start();
+const actSystem = DieScheite.start();
 const publisher = DieScheite.publishers.console.start(actSystem, { pretty: true });
 
 const app = express();

@@ -1,7 +1,6 @@
-const DieScheite = require('../index'),
-      { start, stop } = require('nact');
+const DieScheite = require('../index');
 
-const actSystem = start();
+const actSystem = DieScheite.start();
 const logPublisher = DieScheite.publishers.console.start(actSystem, { pretty: true });
 const ds = DieScheite.generic({
     serviceId: 'example-console',
