@@ -14,7 +14,22 @@ const actSystem = start(); // Start the nact system.
 
 If the nact system is not started no actions will be performed on Die Scheite primitives.
 
-### Publisher
+### Publishers
+
+#### Console Publisher
+
+A simple publisher writing entries as json to stdout is available.
+
+Example:
+```
+const publisher = DieScheite.publishers.console.start(actSystem);
+const prettyPublisher = DieScheite.publishers.console.start(actSystem, { pretty: true });
+```
+
+It takes the optioanl `pretty` argument, if set to `true` it will stringify entries with
+`JSON.stringify(entry, null, 2)`.
+
+#### Custom publishers
 
 A publisher is a `nact` process handling the `PUBLISH` message type, `{ type: 'PUBLISH', entry: { /* ... */ } }`. The
 entry contains the entire log entry object. The publish action on a publisher process must respond with a promise,
@@ -88,16 +103,15 @@ const app = express();
 
 app.use(DieScheite.express.middleware(
   {
-    serviceId: 'example-service',
+    serviceId: 'example-express',
     serviceVersion: '0.1.0',
-    serviceInstanceId: '01'
-  },
-  logPublisher,
-  app,
-  {
+    serviceInstanceId: '01',
+    publisher,
     ignoredRoutes: [ '/healthcheck', /ignored/ ],
+    ignoredHeaders: [ 'date' ],
     censoredHeaders: [ 'user-agent', 'foo' ]
   },
+  app,
 ));
 
 /*
