@@ -4,14 +4,8 @@
 <dt><a href="#module_express">express</a></dt>
 <dd><p>Implements express specific functions to provide tracing and logging to express middlewares.</p>
 </dd>
-<dt><a href="#module_generic">generic</a></dt>
-<dd><p>Defines a generic configurable logger function.</p>
-</dd>
 <dt><a href="#module_levels">levels</a></dt>
 <dd></dd>
-<dt><a href="#module_logged-action">logged-action</a></dt>
-<dd><p>Implements the core of die scheite, create, track and publiish log entries.</p>
-</dd>
 <dt><a href="#module_publishers/console">publishers/console</a> : <code>Object</code></dt>
 <dd><p>publishers/console</p>
 </dd>
@@ -40,7 +34,7 @@ Add the attach function, used to attach additional data to a log message.</p>
 ## Typedefs
 
 <dl>
-<dt><a href="#tracedAction">tracedAction</a> ⇒ <code>*</code></dt>
+<dt><a href="#TracedAction">TracedAction</a> ⇒ <code>*</code></dt>
 <dd><p>Traced action</p>
 </dd>
 </dl>
@@ -149,80 +143,6 @@ app.get('/:id', (req, res, next) => {
   res.send(JSON.stringify({foo: 'bar'}));
 });
 ```
-<a name="module_generic"></a>
-
-## generic
-Defines a generic configurable logger function.
-
-**See**
-
-- [EntryClient](#EntryClient)
-- [publishers](#module_publishers)
-
-**Example**  
-```js
-const { start, generic, publishers, scope } = require('die-scheite');
-const system = start();
-const publisher = publishers.consoele.start(system);
-const myScope = scope.generic();
-const config = {
-  serviceId: 'my-super-service',
-  serviceInstanceId: process.env.POD_NAME,
-  serviceVersion: '0.1.2'
-};
-
-generic(config, publisher)
-  .loggedAction(myScope, (entry) => {
-    entry.info('Actions started');
-    // ... some code
-    return 'Hello, german library.';
-  })
-  .then(({ result }) => console.log(result)); // Prints 'Hello, german library.'
-```
-
-* [generic](#module_generic)
-    * [module.exports(config, publisher)](#exp_module_generic--module.exports) ⇒ <code>GenericLogger</code> ⏏
-        * [~GenericLoggedAction](#module_generic--module.exports..GenericLoggedAction) ⇒ <code>Promise</code>
-        * [~GenericLogger](#module_generic--module.exports..GenericLogger) : <code>Object</code>
-
-<a name="exp_module_generic--module.exports"></a>
-
-### module.exports(config, publisher) ⇒ <code>GenericLogger</code> ⏏
-Configure generics
-
-**Kind**: Exported function  
-**Returns**: <code>GenericLogger</code> - An object with a configured loggedAction function.  
-**See**: [publishers](#module_publishers)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| config | <code>Object</code> | A configuration object |
-| config.serviceId | <code>Object</code> | The serviceId reported with all log entries. Usually the name of the service or                                    project. |
-| config.serviceInstanceId | <code>Object</code> | The serviceInstanceId reported with all log entries. Used to identify this                                            instance if multiple instances are running simultaneously. |
-| config.serviceVersion | <code>Object</code> | The serviceVersion reported with all log entries. |
-| publisher | <code>Actor</code> | A reference to an actor implementing the PUBLISH message type. See [publishers](#module_publishers). |
-
-<a name="module_generic--module.exports..GenericLoggedAction"></a>
-
-#### module.exports~GenericLoggedAction ⇒ <code>Promise</code>
-**Kind**: inner typedef of [<code>module.exports</code>](#exp_module_generic--module.exports)  
-**Returns**: <code>Promise</code> - A promise resolving with the returned value of action when action is complete.  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| scope | <code>Obejct</code> | The scope, see [module:scope](module:scope) |
-| action | [<code>LoggableAction</code>](#module_logged-action--module.exports..LoggableAction) | The action to invoke. |
-
-<a name="module_generic--module.exports..GenericLogger"></a>
-
-#### module.exports~GenericLogger : <code>Object</code>
-**Kind**: inner typedef of [<code>module.exports</code>](#exp_module_generic--module.exports)  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| loggedAction | <code>GenericLoggedAction</code> | A function to log generic function invokation. |
-
 <a name="module_levels"></a>
 
 ## levels
@@ -281,50 +201,6 @@ Constants describing the log level values.
 #### values.CRITICAL : <code>number</code>
 **Kind**: static constant of [<code>values</code>](#module_levels.values)  
 **Default**: <code>500</code>  
-<a name="module_logged-action"></a>
-
-## logged-action
-Implements the core of die scheite, create, track and publiish log entries.
-
-**See**
-
-- [EntryClient](#EntryClient)
-- [publishers](#module_publishers)
-- [generic](#module_generic)
-- [express](#module_express)
-
-
-* [logged-action](#module_logged-action)
-    * [module.exports(serviceInfo, scope, publisher, action)](#exp_module_logged-action--module.exports) ⇒ <code>Promise</code> ⏏
-        * [~LoggableAction](#module_logged-action--module.exports..LoggableAction) ⇒ <code>\*</code>
-
-<a name="exp_module_logged-action--module.exports"></a>
-
-### module.exports(serviceInfo, scope, publisher, action) ⇒ <code>Promise</code> ⏏
-Create, track and publish a log entry for the duration of the supplied action.
-
-**Kind**: Exported function  
-**Returns**: <code>Promise</code> - A promise resolved with the return value of the action when the action is completed.  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| serviceInfo | <code>Object</code> | An object with service info |
-| scope | <code>Object</code> | Scope specifi data |
-| publisher | <code>Actor</code> | A reference to a publisher actor. |
-| action | <code>LoggableAction</code> | The action to invoke in the logged scope |
-
-<a name="module_logged-action--module.exports..LoggableAction"></a>
-
-#### module.exports~LoggableAction ⇒ <code>\*</code>
-Loggable action
-
-**Kind**: inner typedef of [<code>module.exports</code>](#exp_module_logged-action--module.exports)  
-**Returns**: <code>\*</code> - Anything  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| entry | [<code>EntryClient</code>](#EntryClient) | An instance of an [EntryClient](#EntryClient) used to manipulate the log entry. |
-
 <a name="module_publishers/console"></a>
 
 ## publishers/console : <code>Object</code>
@@ -375,7 +251,7 @@ Exposes the console publisher module.
 
 * [die-scheite](#module_die-scheite)
     * [.express](#module_die-scheite.express) : [<code>express</code>](#module_express)
-    * [.generic](#module_die-scheite.generic) : [<code>module.exports</code>](#exp_module_generic--module.exports)
+    * [.generic](#module_die-scheite.generic) : <code>module:generic</code>
     * [.publishers](#module_die-scheite.publishers) : [<code>publishers</code>](#module_publishers)
     * [.scope](#module_die-scheite.scope) : <code>module:scope</code>
 
@@ -387,7 +263,7 @@ Exposes express specific setup and utilities
 **Kind**: static property of [<code>die-scheite</code>](#module_die-scheite)  
 <a name="module_die-scheite.generic"></a>
 
-### die-scheite.generic : [<code>module.exports</code>](#exp_module_generic--module.exports)
+### die-scheite.generic : <code>module:generic</code>
 Exposes generic setup and logging functions.
 
 **Kind**: static property of [<code>die-scheite</code>](#module_die-scheite)  
@@ -527,7 +403,7 @@ Starts a trace wrapping the supplied action.
 | Param | Type | Description |
 | --- | --- | --- |
 | name | <code>String</code> | The name of the trace. Do not use unique name, eg by including dynamic values. |
-| action | [<code>tracedAction</code>](#tracedAction) | The action to be traced, it is invoked with the [TracerClient](#TracerClient) representing                                this trace. |
+| action | [<code>TracedAction</code>](#TracedAction) | The action to be traced, it is invoked with the [TracerClient](#TracerClient) representing                                this trace. |
 
 <a name="EntryClient+extend"></a>
 
@@ -714,11 +590,11 @@ Starts a sub trace of the trace repesented by this instance, wrapping the suppli
 | Param | Type | Description |
 | --- | --- | --- |
 | name | <code>String</code> | The name of the trace. Do not use unique name, eg by including dynamic values. |
-| action | [<code>tracedAction</code>](#tracedAction) | The action to be traced, it is invoked with the [TracerClient](#TracerClient) representing                                this trace. |
+| action | [<code>TracedAction</code>](#TracedAction) | The action to be traced, it is invoked with the [TracerClient](#TracerClient) representing                                this trace. |
 
-<a name="tracedAction"></a>
+<a name="TracedAction"></a>
 
-## tracedAction ⇒ <code>\*</code>
+## TracedAction ⇒ <code>\*</code>
 Traced action
 
 **Kind**: global typedef  
@@ -729,9 +605,9 @@ Traced action
 - [trace](#TracerClient+trace)
 
 
-| Param | Type |
-| --- | --- |
-| tracer | [<code>TracerClient</code>](#TracerClient) | 
+| Param | Type | Description |
+| --- | --- | --- |
+| tracer | [<code>TracerClient</code>](#TracerClient) | An instance used to manipulate the new trace |
 
 <a name="external_ExpressApplication"></a>
 
