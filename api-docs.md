@@ -66,7 +66,7 @@ Implements express specific functions to provide tracing and logging to express 
 
 * [express](#module_express)
     * [.errorHandler(err, req, res, next)](#module_express.errorHandler)
-    * [.middleware(opts, app)](#module_express.middleware) ⇒ [<code>ExpressMiddleware</code>](#external_ExpressMiddleware)
+    * [.middleware(opts)](#module_express.middleware) ⇒ [<code>ExpressMiddleware</code>](#external_ExpressMiddleware)
 
 <a name="module_express.errorHandler"></a>
 
@@ -98,7 +98,7 @@ app.use(DieScheite.express.errorHandler);
 ```
 <a name="module_express.middleware"></a>
 
-### express.middleware(opts, app) ⇒ [<code>ExpressMiddleware</code>](#external_ExpressMiddleware)
+### express.middleware(opts) ⇒ [<code>ExpressMiddleware</code>](#external_ExpressMiddleware)
 Creates a middleware initializing and publishing log entries.
 The [entry](#EntryClient) is set on the logger key on the request object.
 
@@ -112,8 +112,7 @@ The [entry](#EntryClient) is set on the logger key on the request object.
 | opts.serviceVersion | <code>String</code> | - |
 | opts.censoredHeaders | <code>Array.&lt;String&gt;</code> | Headers whose values is replaced with '<censored>' in the log entry. |
 | opts.ignoredHeaders | <code>Array.&lt;String&gt;</code> | Headers whose values is omitted from the log entry. |
-| opts.ignoredRoutes | <code>Array.&lt;(String\|RegExp)&gt;</code> | Strings or RegExp matching urls for which a log entry should not be                                                 initialized. |
-| app | [<code>ExpressApplication</code>](#external_ExpressApplication) | The express application |
+| opts.ignoredRoutes | <code>Array.&lt;(String\|RegExp)&gt;</code> | Strings or RegExp matching urls for which a log entry should not be                                                    initialized. |
 
 **Example**  
 ```js

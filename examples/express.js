@@ -6,17 +6,14 @@ const publisher = DieScheite.publishers.console.start(actSystem, { pretty: true 
 
 const app = express();
 
-app.use(DieScheite.express.middleware(
-  {
-    serviceId: 'example-express',
-    serviceVersion: '0.1.0',
-    serviceInstanceId: '01',
-    publisher,
-    ignoredRoutes: [ '/healthcheck', /ignored/ ],
-    censoredHeaders: [ 'user-agent', 'foo' ]
-  },
-  app,
-));
+app.use(DieScheite.express.middleware({
+  serviceId: 'example-express',
+  serviceVersion: '0.1.0',
+  serviceInstanceId: '01',
+  publisher,
+  ignoredRoutes: [ '/healthcheck', /ignored/ ],
+  censoredHeaders: [ 'user-agent', 'foo' ]
+}));
 
 app.get('/healthcheck', (req, res) => {
   res.send("OK");
