@@ -73,6 +73,13 @@ router.get('/:id/error', (req, res) => {
   throw new Error('Aja baja!');
 });
 
+router.use('/:id/async-error', async (req, res, next) => {
+  await new Promise((resolve, reject) => {
+    setImmediate(() => reject(new Error('Aja baja!')));
+  })
+  .catch(err => next(err));
+});
+
 router.use('/:id/timeout', (req, res, next) => {
   setTimeout(next, 5000);
 });
