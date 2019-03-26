@@ -3,6 +3,8 @@ steps:
   id: npm install
   args:
   - 'install'
+  secretEnv:
+  - 'NPM_TOKEN'
 - name: 'gcr.io/cloud-builders/npm'
   id: npm publish
   args:
