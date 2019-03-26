@@ -7,8 +7,10 @@ steps:
   - 'NPM_TOKEN'
 - name: 'gcr.io/cloud-builders/npm'
   id: npm publish
+  entrypoint: /bin/bash
   args:
-  - 'publish'
+  - '-c'
+  - 'if [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then npm publish; fi'
   secretEnv:
   - 'NPM_TOKEN'
 secrets:
