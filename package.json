@@ -1,5 +1,5 @@
 {
-  "name": "die-scheite",
+  "name": "@plugandtrade/diescheite",
   "version": "0.1.2",
   "description": "Die Sceite node client library",
   "main": "index.js",
