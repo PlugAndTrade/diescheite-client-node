@@ -1,0 +1,15 @@
+steps:
+- name: 'gcr.io/cloud-builders/npm'
+  id: npm install
+  args:
+  - 'install'
+- name: 'gcr.io/cloud-builders/npm'
+  id: npm publish
+  args:
+  - 'publish'
+  secretEnv:
+  - 'NPM_TOKEN'
+secrets:
+- kmsKeyName: projects/plug-and-trade/locations/global/keyRings/cloud-build-secrets/cryptoKeys/symmetric-secrets
+  secretEnv:
+    NPM_TOKEN: 'CiQAPuD9xraHaj3rlhNssHwLS+ElXRij3eO2vHzghWDGZ/szTTcSTQC2NNZIpclJ6uu0bu51oGrD3fgJG2GrGiKc4QWtAppRMtVfUlI5xXIcIFl2WROzUQKdSDN3qiMGaTxPU3iVHzwSt6dtUaiGrV3Pauel'
