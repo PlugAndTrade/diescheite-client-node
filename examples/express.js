@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/:id', (req, res) => {
+app.get('/some/:id', (req, res) => {
   return req.logger.trace("send", logger => {
     res.send(JSON.stringify({foo: 'bar', id: req.params.id}));
   });
@@ -61,31 +61,35 @@ subRouter.use('/:subId/foo', fooRouter);
 
 const router = express.Router();
 
-router.use('/:id', (req, res, next) => {
+router.use('/some/:id', (req, res, next) => {
   req.foo = { id: req.params.id };
   req.logger.info(`Got id: ${req.params.id}`);
   return next();
 });
 
-router.use('/:id/sub', subRouter);
+router.use('/some/:id/sub', subRouter);
 
-router.get('/:id/error', (req, res) => {
+router.get('/some/:id/error', (req, res) => {
   throw new Error('Aja baja!');
 });
 
-router.use('/:id/async-error', async (req, res, next) => {
+router.use('/some/:id/async-error', async (req, res, next) => {
   await new Promise((resolve, reject) => {
     setImmediate(() => reject(new Error('Aja baja!')));
   })
   .catch(err => next(err));
 });
 
-router.use('/:id/timeout', (req, res, next) => {
+router.use('/some/:id/timeout', (req, res, next) => {
   setTimeout(next, 5000);
 });
 
-router.get('/:id/timeout', (req, res) => {
+router.get('/some/:id/timeout', (req, res) => {
   res.send("Timeout");
+});
+
+router.get(/^(.*)$/, (req, res) => {
+  res.send('Catch all');
 });
 
 app.use(router);
