@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "express": "^4.16.4",
-    "jsdoc-to-markdown": "^4.0.1"
+    "jsdoc-to-markdown": "^5.0.0"
   }
 }
